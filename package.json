@@ -13,10 +13,15 @@
   "keywords": [
     "chatbot",
     "koishi",
-    "plugin"
+    "plugin",
+    "half-life",
+    "goldsrc",
+    "cstrike"
   ],
-  "devDependencies": {},
   "peerDependencies": {
     "koishi": "^4.18.7"
+  },
+  "dependencies": {
+    "sharp": "^0.34.5"
   }
 }
