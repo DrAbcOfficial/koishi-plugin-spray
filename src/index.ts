@@ -1,4 +1,4 @@
-import { Context, Schema } from 'koishi'
+import { Context, Schema, Session, h } from 'koishi'
 import sharp from 'sharp'
 
 export const name = 'spray'
@@ -156,18 +156,41 @@ async function generateWad3Spray(imageBuffer: Buffer, maxPixiel: number): Promis
   return full
 }
 
+/**
+ * 从会话中提取第一张图片并返回其 Buffer。
+ * @param ctx - Koishi 上下文（用于 HTTP 请求）
+ * @param session - 当前会话
+ * @returns Promise<Buffer | null>，若无图片则返回 null
+ */
+async function getFirstImageAsBuffer(ctx: Context, session: Session): Promise<Buffer | null> {
+  // 方法 1：从 h 元素解析（推荐）
+  const elements = session.elements
+  const firstImg = elements.find(el => el.type === 'img' && el.attrs?.src)
+
+  if (!firstImg?.attrs?.src) return null
+
+  const url = firstImg.attrs.src as string
+
+  try {
+    // 使用 ctx.http 下载图片（自动处理跨域、重定向等）
+    const arrayBuffer = await ctx.http.get<ArrayBuffer>(url, {
+      responseType: 'arraybuffer',
+      timeout: 10000,
+    })
+    return Buffer.from(arrayBuffer)
+  } catch (err) {
+    ctx.logger.warn('Failed to download image:', url, err)
+    return null
+  }
+}
+
 export function apply(ctx: Context, config: Config) {
   ctx.command("喷漆 制作一张喷漆")
-  .action(({session})=>{
-    let image = null;
-    for(const element of session.event.message.elements){
-      if(element.type == 'img'){
-        image = element;
-        break;
-      }
-    }
+  .action(async ({session})=>{
+    let image = await getFirstImageAsBuffer(ctx, session);
     if(image == null)
       return '输入一张图片吧';
-    const wadBuffer = await generateWad3Spray(image.src, config.maxPixiel);
+    const wadBuffer = await generateWad3Spray(image, config.maxPixiel);
+    return h.file(wadBuffer)
   });
 }
