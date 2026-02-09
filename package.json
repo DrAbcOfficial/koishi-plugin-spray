@@ -10,6 +10,10 @@
   ],
   "license": "MIT",
   "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DrAbcOfficial/koishi-plugin-spray.git"
+  },
   "keywords": [
     "chatbot",
     "koishi",
@@ -23,5 +27,8 @@
   },
   "dependencies": {
     "sharp": "^0.34.5"
+  },
+  "koishi": {
+    "preview": true
   }
 }
